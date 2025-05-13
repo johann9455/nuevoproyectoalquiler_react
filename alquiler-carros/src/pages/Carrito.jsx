@@ -108,3 +108,75 @@ export default function Carrito() {
           </div>
         </div>
       </div>
+      <div className={styles.paymentSection}>
+        <h2 className={styles.sectionTitle}>Datos de pago</h2>
+       
+        {error && <div className={styles.errorMessage}>{error}</div>}
+ 
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Número de tarjeta</label>
+          <input
+            type="text"
+            value={tarjeta.numero}
+            onChange={(e) => setTarjeta({...tarjeta, numero: e.target.value.replace(/\D/g, '').slice(0, 16)})}
+            className={styles.input}
+            placeholder="1234 5678 9012 3456"
+          />
+        </div>
+ 
+        <div className={styles.formRow}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Fecha expiración (MM/AA)</label>
+            <input
+              type="text"
+              value={tarjeta.expiracion}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '');
+                if (value.length <= 4) {
+                  setTarjeta({
+                    ...tarjeta,
+                    expiracion: value.length > 2 ? `${value.slice(0, 2)}/${value.slice(2)}` : value
+                  });
+                }
+              }}
+              className={styles.input}
+              placeholder="MM/AA"
+              maxLength={5}
+            />
+          </div>
+ 
+          <div className={styles.formGroup}>
+            <label className={styles.label}>CVV</label>
+            <input
+              type="password"
+              value={tarjeta.cvv}
+              onChange={(e) => setTarjeta({...tarjeta, cvv: e.target.value.replace(/\D/g, '').slice(0, 3)})}
+              className={styles.input}
+              placeholder="123"
+              maxLength={3}
+            />
+          </div>
+        </div>
+ 
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Nombre del titular</label>
+          <input
+            type="text"
+            value={tarjeta.titular}
+            onChange={(e) => setTarjeta({...tarjeta, titular: e.target.value})}
+            className={styles.input}
+            placeholder="Como aparece en la tarjeta"
+          />
+        </div>
+ 
+        <button
+          className={styles.primaryButton}
+          onClick={handlePago}
+          disabled={state.productos.length === 0}
+        >
+          Confirmar Pago
+        </button>
+      </div>
+    </div>
+  );
+}
