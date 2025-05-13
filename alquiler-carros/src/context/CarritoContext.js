@@ -28,3 +28,38 @@ const carritoReducer = (state, action) => {
       return state;
   }
 };
+
+const CarritoContext = createContext();
+ 
+export const useCarrito = () => {
+  const context = useContext(CarritoContext);
+  if (!context) {
+    throw new Error('useCarrito debe usarse dentro de CarritoProvider');
+  }
+  return context;
+};
+ 
+export const CarritoProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(carritoReducer, initialState);
+ 
+  // Opcional: Persistencia en localStorage
+  useEffect(() => {
+    const savedState = localStorage.getItem('carritoState');
+    if (savedState) {
+      dispatch({
+        type: 'CARGAR_ESTADO',
+        payload: JSON.parse(savedState)
+      });
+    }
+  }, []);
+ 
+  useEffect(() => {
+    localStorage.setItem('carritoState', JSON.stringify(state));
+  }, [state]);
+ 
+  return (
+    <CarritoContext.Provider value={{ state, dispatch }}>
+      {children}
+    </CarritoContext.Provider>
+  );
+};
