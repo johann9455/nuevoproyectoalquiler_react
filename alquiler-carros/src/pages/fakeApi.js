@@ -7,6 +7,7 @@ const BASE_DE_DATOS = Array.from({ length: 60 }, (_, i) => ({
   año: 2020 + (i % 5),
   transmision: ["Automático", "Manual"][i % 2],
   descripcion: `Vehículo en excelente estado, ${["aire acondicionado", "tecnología Bluetooth", "asientos de cuero"][i % 3]}.`,
+  imagen: ["/img/1.png","/img/2.png","/img/3.png","/img/4.png"][i % 4],
 }));
 
 export function obtenerProductos(pagina, tamañoPagina = 15) {

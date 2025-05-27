@@ -123,7 +123,7 @@ export default function Productos() {
               onClick={() => setProductoSeleccionado(producto)}
             >
               <img 
-                src={producto.imagen || '/placeholder-car.jpg'} 
+                src={producto.imagen} 
                 alt={producto.marca} 
                 className={styles.productImage}
               />

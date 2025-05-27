@@ -47,8 +47,8 @@ export default function Carrito() {
     // Pago exitoso
     setError('');
     alert(`¡Pago exitoso por $${total.toLocaleString()}!`);
-    dispatch({ type: 'LIMPIAR_CARRITO' });
     navigate('/confirmacion');
+    
   };
 
   return (
