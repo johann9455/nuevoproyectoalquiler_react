@@ -96,6 +96,9 @@ export default function Productos() {
             <option value="Sedán">Sedán</option>
             <option value="SUV">SUV</option>
             <option value="Pickup">Pickup</option>
+            <option value="Deportivo">Deportivo</option>
+            <option value="Hatchback">Deportivo</option>
+            <option value="Convertible">Deportivo</option>
           </select>
         </div>
 
