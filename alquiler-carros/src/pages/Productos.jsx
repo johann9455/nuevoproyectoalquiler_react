@@ -96,6 +96,9 @@ export default function Productos() {
             <option value="Sedán">Sedán</option>
             <option value="SUV">SUV</option>
             <option value="Pickup">Pickup</option>
+            <option value="Deportivo">Deportivo</option>
+            <option value="Hatchback">Deportivo</option>
+            <option value="Convertible">Deportivo</option>
           </select>
         </div>
 
@@ -123,7 +126,7 @@ export default function Productos() {
               onClick={() => setProductoSeleccionado(producto)}
             >
               <img 
-                src={producto.imagen || '/placeholder-car.jpg'} 
+                src={producto.imagen} 
                 alt={producto.marca} 
                 className={styles.productImage}
               />
