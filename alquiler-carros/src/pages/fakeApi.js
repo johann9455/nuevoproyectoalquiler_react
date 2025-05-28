@@ -6,7 +6,8 @@ const BASE_DE_DATOS = Array.from({ length: 60 }, (_, i) => ({
   tipo: ["Sedán", "SUV", "Deportivo", "Hatchback"][i % 4],
   año: 2020 + (i % 5),
   transmision: ["Automático", "Manual"][i % 2],
-  descripcion: `Vehículo en excelente estado, ${["aire acondicionado", "tecnología Bluetooth", "asientos de cuero"][i % 3]}.`,
+  descripcion: `Vehículo en excelente estado, ${["aire acondicionado", "tecnología Bluetooth", "asientos de cuero", "GPS integrado", "sensores de parqueo", "cámara trasera"][i % 6]}.`,
+  imagen: ["/img/corolla.jpg","/img/nissan.jpg","/img/bmw.jpg","/img/kia.jpeg","/img/ford.jpg","/img/camaro.jpg"][i % 6],
 }));
 
 export function obtenerProductos(pagina, tamañoPagina = 15) {
