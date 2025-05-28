@@ -1,37 +1,31 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCarrito } from '../context/CarritoContext';
-import { obtenerProductos } from './fakeApi';
+import { obtenerProductos, TIPOS_DISPONIBLES } from './fakeApi';
 import styles from '../styles/Productos.module.css';
 
 export default function Productos() {
   const navigate = useNavigate();
   const { state: carritoState, dispatch } = useCarrito();
-  
-  // Estados para gestión de productos
+
   const [productos, setProductos] = useState([]);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [pagina, setPagina] = useState(1);
   const [cargando, setCargando] = useState(false);
   const [finDeLista, setFinDeLista] = useState(false);
-  
-  // Estados para filtros
-  const [filtros, setFiltros] = useState({
-    tipo: '',
-    precioMax: ''
-  });
+  const [filtros, setFiltros] = useState({ tipo: '', precioMax: '' });
 
-  // Cargar productos con scroll infinito
-  const cargarProductos = useCallback(async () => {
+  // Cargar productos por página
+  const cargarProductos = useCallback(async (reiniciar = false) => {
     if (cargando || finDeLista) return;
-    
     setCargando(true);
     try {
-      const nuevosProductos = await obtenerProductos(pagina);
-      if (nuevosProductos.length === 0) {
+      const nuevos = await obtenerProductos(reiniciar ? 1 : pagina);
+      if (nuevos.length === 0) {
         setFinDeLista(true);
       } else {
-        setProductos(prev => [...prev, ...nuevosProductos]);
+        setProductos(prev => reiniciar ? nuevos : [...prev, ...nuevos]);
+        if (reiniciar) setPagina(2);
       }
     } catch (error) {
       console.error("Error cargando productos:", error);
@@ -40,34 +34,33 @@ export default function Productos() {
     }
   }, [pagina, cargando, finDeLista]);
 
-  // Manejar scroll
+  // Inicial: cargar primera página
+  useEffect(() => {
+    cargarProductos(true);
+  }, [cargarProductos]);
+
+  // Scroll infinito
   const handleScroll = useCallback((e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
-    const nearBottom = scrollHeight - scrollTop <= clientHeight * 1.1;
-    
-    if (nearBottom && !cargando && !finDeLista) {
+    if (scrollHeight - scrollTop <= clientHeight * 1.1 && !cargando && !finDeLista) {
       setPagina(prev => prev + 1);
     }
   }, [cargando, finDeLista]);
 
-  // Efecto para carga inicial
+  // Cargar más al cambiar página (scroll)
   useEffect(() => {
-    cargarProductos();
-  }, [cargarProductos]);
+    if (pagina > 1) cargarProductos();
+  }, [pagina, cargarProductos]);
 
   // Filtrar productos
-  const productosFiltrados = productos.filter(producto => {
-    const cumpleTipo = !filtros.tipo || producto.tipo === filtros.tipo;
-    const cumplePrecio = !filtros.precioMax || producto.precioDia <= Number(filtros.precioMax);
-    return cumpleTipo && cumplePrecio;
+  const productosFiltrados = productos.filter(p => {
+    const coincideTipo = !filtros.tipo || p.tipo === filtros.tipo;
+    const coincidePrecio = !filtros.precioMax || p.precioDia <= Number(filtros.precioMax);
+    return coincideTipo && coincidePrecio;
   });
 
-  // Agregar al carrito
   const agregarAlCarrito = (producto) => {
-    dispatch({
-      type: 'AGREGAR_PRODUCTO',
-      payload: producto
-    });
+    dispatch({ type: 'AGREGAR_PRODUCTO', payload: producto });
   };
 
   return (
@@ -75,10 +68,7 @@ export default function Productos() {
       <header className={styles.header}>
         <h1 className={styles.title}>Catálogo de Vehículos</h1>
         <div className={styles.actions}>
-          <button 
-            className={styles.carritoButton}
-            onClick={() => navigate('/carrito')}
-          >
+          <button className={styles.carritoButton} onClick={() => navigate('/carrito')}>
             Ver Carrito ({carritoState.productos.length})
           </button>
         </div>
@@ -90,15 +80,14 @@ export default function Productos() {
           <select
             className={styles.filterSelect}
             value={filtros.tipo}
-            onChange={(e) => setFiltros({...filtros, tipo: e.target.value})}
+            onChange={(e) => {
+              setFiltros({ ...filtros, tipo: e.target.value });
+            }}
           >
             <option value="">Todos</option>
-            <option value="Sedán">Sedán</option>
-            <option value="SUV">SUV</option>
-            <option value="Pickup">Pickup</option>
-            <option value="Deportivo">Deportivo</option>
-            <option value="Hatchback">Hatchback</option>
-            <option value="Convertible">Convertible</option>
+            {TIPOS_DISPONIBLES.map(tipo => (
+              <option key={tipo} value={tipo}>{tipo}</option>
+            ))}
           </select>
         </div>
 
@@ -108,28 +97,21 @@ export default function Productos() {
             type="number"
             className={styles.filterInput}
             value={filtros.precioMax}
-            onChange={(e) => setFiltros({...filtros, precioMax: e.target.value})}
+            onChange={(e) => setFiltros({ ...filtros, precioMax: e.target.value })}
             placeholder="Máximo COP"
           />
         </div>
       </section>
 
       <main className={styles.mainContent}>
-        <section 
-          className={styles.productList}
-          onScroll={handleScroll}
-        >
+        <section className={styles.productList} onScroll={handleScroll}>
           {productosFiltrados.map(producto => (
-            <article 
-              key={producto.id} 
+            <article
+              key={producto.id}
               className={`${styles.productCard} ${productoSeleccionado?.id === producto.id ? styles.selected : ''}`}
               onClick={() => setProductoSeleccionado(producto)}
             >
-              <img 
-                src={producto.imagen} 
-                alt={producto.marca} 
-                className={styles.productImage}
-              />
+              <img src={producto.imagen} alt={producto.marca} className={styles.productImage} />
               <div className={styles.productInfo}>
                 <h3 className={styles.productTitle}>{producto.marca} {producto.modelo}</h3>
                 <p className={styles.productPrice}>${producto.precioDia.toLocaleString()} /día</p>
@@ -146,30 +128,16 @@ export default function Productos() {
               </div>
             </article>
           ))}
-          
-          {cargando && (
-            <div className={styles.loading}>
-              <p>Cargando más vehículos...</p>
-            </div>
-          )}
-          
-          {finDeLista && !cargando && (
-            <div className={styles.endMessage}>
-              <p>¡Has visto todos nuestros vehículos!</p>
-            </div>
-          )}
+
+          {cargando && <div className={styles.loading}><p>Cargando más vehículos...</p></div>}
+          {finDeLista && !cargando && <div className={styles.endMessage}><p>¡Has visto todos nuestros vehículos!</p></div>}
         </section>
 
         <aside className={styles.detailPanel}>
           {productoSeleccionado ? (
             <>
               <h2 className={styles.detailTitle}>{productoSeleccionado.marca} {productoSeleccionado.modelo}</h2>
-              <img 
-                src={productoSeleccionado.imagen || '/placeholder-car.jpg'} 
-                alt={productoSeleccionado.marca} 
-                className={styles.detailImage}
-              />
-              
+              <img src={productoSeleccionado.imagen} alt={productoSeleccionado.marca} className={styles.detailImage} />
               <div className={styles.detailSpecs}>
                 <p><strong>Precio por día:</strong> ${productoSeleccionado.precioDia.toLocaleString()}</p>
                 <p><strong>Tipo:</strong> {productoSeleccionado.tipo}</p>
@@ -177,11 +145,7 @@ export default function Productos() {
                 <p><strong>Transmisión:</strong> {productoSeleccionado.transmision}</p>
                 <p><strong>Descripción:</strong> {productoSeleccionado.descripcion}</p>
               </div>
-              
-              <button
-                className={styles.primaryButton}
-                onClick={() => agregarAlCarrito(productoSeleccionado)}
-              >
+              <button className={styles.primaryButton} onClick={() => agregarAlCarrito(productoSeleccionado)}>
                 Alquilar este vehículo
               </button>
             </>
