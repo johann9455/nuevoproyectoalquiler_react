@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCarrito } from '../context/CarritoContext';
+import {useCarrito} from '../context/CarritoContext'
 
 export default function Confirmacion() {
   const navigate = useNavigate();
